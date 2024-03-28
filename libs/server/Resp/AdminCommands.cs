@@ -283,22 +283,27 @@ namespace Garnet.server
                 }
                 else
                 {
-                    // TODO: include the built-in commands
-                    string resultStr = "";
-                    int cnt = 0;
-                    for (int i = 0; i < storeWrapper.customCommandManager.CommandId; i++)
+                    var resultSb = new StringBuilder();
+                    var commandCount = 0;
+                    for (var i = 0; i < storeWrapper.customCommandManager.CommandId; i++)
                     {
                         var cmd = storeWrapper.customCommandManager.commandMap[i];
                         if (cmd != null)
                         {
-                            cnt++;
-                            resultStr += $"*6\r\n${cmd.nameStr.Length}\r\n{cmd.nameStr}\r\n:{1 + cmd.NumKeys + cmd.NumParams}\r\n*1\r\n+fast\r\n:1\r\n:1\r\n:1\r\n";
+                            commandCount++;
+                            resultSb.Append($"*6\r\n${cmd.nameStr.Length}\r\n{cmd.nameStr}\r\n:{1 + cmd.NumKeys + cmd.NumParams}\r\n*1\r\n+fast\r\n:1\r\n:1\r\n:1\r\n");
                         }
                     }
 
-                    while (!RespWriteUtils.WriteDirect(Encoding.ASCII.GetBytes($"*{cnt}\r\n"), ref dcurr, dend))
+                    foreach (var respCommandsInfo in RespCommandsInfo.getAllCommandsInfo().Take(3))
+                    {
+                        commandCount++;
+                        resultSb.Append($"*6\r\n${respCommandsInfo.nameStr.Length}\r\n{respCommandsInfo.nameStr}\r\n:{respCommandsInfo.arity}\r\n*1\r\n+fast\r\n:1\r\n:1\r\n:1\r\n");
+                    }
+
+                    while (!RespWriteUtils.WriteDirect(Encoding.ASCII.GetBytes($"*{commandCount}\r\n"), ref dcurr, dend))
                         SendAndReset();
-                    while (!RespWriteUtils.WriteDirect(Encoding.ASCII.GetBytes(resultStr), ref dcurr, dend))
+                    while (!RespWriteUtils.WriteDirect(Encoding.ASCII.GetBytes(resultSb.ToString()), ref dcurr, dend))
                         SendAndReset();
                 }
             }

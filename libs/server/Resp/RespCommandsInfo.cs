@@ -62,6 +62,16 @@ namespace Garnet.server
             return result;
         }
 
+        public static IEnumerable<RespCommandsInfo> getAllCommandsInfo()
+        {
+            foreach (var value in basicCommandsInfoMap.Values) yield return value;
+            foreach (var value in customCommandsInfoMap.Values) yield return value;
+            foreach (var value in hashCommandsInfoMap.Values) yield return value;
+            foreach (var value in listCommandsInfoMap.Values) yield return value;
+            foreach (var value in setCommandsInfoMap.Values) yield return value;
+            foreach (var value in sortedSetCommandsInfoMap.Values) yield return value;
+        }
+
         private static readonly Dictionary<RespCommand, RespCommandsInfo> basicCommandsInfoMap = new Dictionary<RespCommand, RespCommandsInfo>
         {
             {RespCommand.GET,       new RespCommandsInfo("GET", RespCommand.GET,             2, null)},

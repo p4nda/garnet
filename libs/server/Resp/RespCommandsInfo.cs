@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
 namespace Garnet.server
 {
@@ -17,8 +19,27 @@ namespace Garnet.server
         public readonly byte arrayCommand;
         public readonly RespCommand command;
         public readonly HashSet<RespCommandOption> options;
+        public readonly RespCommandFlags flags;
+        public readonly string[] flagStrings;
 
-        public RespCommandsInfo(string name, RespCommand command, int arity, HashSet<RespCommandOption> options)
+        private static readonly Lazy<IReadOnlyDictionary<string, string>> lazyFlagNameToDesc =
+            new(
+                () =>
+                {
+                    var flagToDesc = new Dictionary<string, string>();
+                    foreach (var flagFieldInfo in typeof(RespCommandFlags).GetFields())
+                    {
+                        var descAttr = (DescriptionAttribute)flagFieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false).FirstOrDefault();
+                        if (descAttr != null)
+                        {
+                            flagToDesc.Add(flagFieldInfo.Name, descAttr.Description);
+                        }
+                    }
+
+                    return flagToDesc;
+                });
+
+        public RespCommandsInfo(string name, RespCommand command, int arity, HashSet<RespCommandOption> options, RespCommandFlags flags = RespCommandFlags.None)
         {
             nameStr = name.ToUpper();
             this.name = System.Text.Encoding.ASCII.GetBytes(nameStr);
@@ -26,8 +47,13 @@ namespace Garnet.server
             this.arity = arity;
             this.options = options;
             this.arrayCommand = 255;
+            this.flags = flags;
+            this.flagStrings = flags == RespCommandFlags.None
+                ? Array.Empty<string>()
+                : flags.ToString().Split(',').Select(f => lazyFlagNameToDesc.Value[f.Trim()]).ToArray();
         }
-        public RespCommandsInfo(string name, RespCommand command, int arity, HashSet<RespCommandOption> options, byte arrayCommand) : this(name, command, arity, options)
+
+        public RespCommandsInfo(string name, RespCommand command, int arity, HashSet<RespCommandOption> options, byte arrayCommand, RespCommandFlags flags = RespCommandFlags.None) : this(name, command, arity, options, flags)
         {
             this.arrayCommand = arrayCommand;
         }
@@ -74,7 +100,7 @@ namespace Garnet.server
 
         private static readonly Dictionary<RespCommand, RespCommandsInfo> basicCommandsInfoMap = new Dictionary<RespCommand, RespCommandsInfo>
         {
-            {RespCommand.GET,       new RespCommandsInfo("GET", RespCommand.GET,             2, null)},
+            {RespCommand.GET,       new RespCommandsInfo("GET", RespCommand.GET,             2, null, RespCommandFlags.ReadOnly | RespCommandFlags.Fast)},
             {RespCommand.SET,       new RespCommandsInfo("SET", RespCommand.SET,            -3, new HashSet<RespCommandOption>{
                 RespCommandOption.EX,
                 RespCommandOption.NX,

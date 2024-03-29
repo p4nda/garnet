@@ -298,7 +298,9 @@ namespace Garnet.server
                     foreach (var respCommandsInfo in RespCommandsInfo.getAllCommandsInfo().Take(3))
                     {
                         commandCount++;
-                        resultSb.Append($"*6\r\n${respCommandsInfo.nameStr.Length}\r\n{respCommandsInfo.nameStr}\r\n:{respCommandsInfo.arity}\r\n*1\r\n+fast\r\n:1\r\n:1\r\n:1\r\n");
+
+                        resultSb.Append(
+                            $"*6\r\n${respCommandsInfo.nameStr.Length}\r\n{respCommandsInfo.nameStr}\r\n:{respCommandsInfo.arity}\r\n*{respCommandsInfo.flagStrings.Length}\r\n{string.Join("\r\n", respCommandsInfo.flagStrings.Select(fs => $"+{fs}"))}\r\n:1\r\n:1\r\n:1\r\n");
                     }
 
                     while (!RespWriteUtils.WriteDirect(Encoding.ASCII.GetBytes($"*{commandCount}\r\n"), ref dcurr, dend))

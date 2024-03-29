@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 namespace Garnet.server
@@ -109,9 +111,59 @@ namespace Garnet.server
     /// <summary>
     /// RESP command options enum
     /// </summary>
-    enum RespCommandOption : byte
+    enum RespCommandOption : ushort
     {
         EX, NX, XX, GET, PX, EXAT, PXAT, PERSIST, GT, LT
+    }
+
+
+    /// <summary>
+    /// RESP command flags enum
+    /// </summary>
+    [Flags]
+    enum RespCommandFlags
+    {
+        None = 0,
+        [Description("admin")]
+        Admin = 1,
+        [Description("asking")]
+        Asking = 1 << 1,
+        [Description("blocking")]
+        Blocking = 1 << 2,
+        [Description("denyroom")]
+        DenyRoom = 1 << 3,
+        [Description("fast")]
+        Fast = 1 << 4,
+        [Description("loading")]
+        Loading = 1 << 5,
+        [Description("moveablekeys")]
+        MoveableKeys = 1 << 6,
+        [Description("no_auth")]
+        NoAuth = 1 << 7,
+        [Description("no_async_loading")]
+        NoAsyncLoading = 1 << 8,
+        [Description("no_mandatory_keys")]
+        NoMandatoryKeys = 1 << 9,
+        [Description("no_multi")]
+        NoMulti = 1 << 10,
+        [Description("noscript")]
+        NoScript = 1 << 11,
+        [Description("pubsub")]
+        PubSub = 1 << 12,
+        [Description("random")]
+        Random = 1 << 13,
+        [Description("readonly")]
+        ReadOnly = 1 << 14,
+        [Description("sort_for_script")]
+        SortForScript = 1 << 15,
+        [Description("skip_monitor")]
+        SkipMonitor = 1 << 16,
+        [Description("skip_slowlog")]
+        SkipSlowLog = 1 << 17,
+        [Description("stale")]
+        Stale = 1 << 18,
+        [Description("write")]
+        Write = 1 << 19,
     }
 
     /// <summary>
